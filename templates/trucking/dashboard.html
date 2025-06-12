@@ -1,0 +1,199 @@
+{% extends "base.html" %}
+
+{% block title %}Trucking Dashboard - Pilots Everywhere{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2 class="text-emerald">
+                    <i class="fas fa-tachometer-alt"></i> Welcome, {{ company.company_name }}
+                </h2>
+                <div class="d-flex gap-2">
+                    <a href="{{ url_for('post_job') }}" class="btn btn-emerald">
+                        <i class="fas fa-plus-circle"></i> Post Job
+                    </a>
+                    <a href="{{ url_for('profile') }}" class="btn btn-outline-emerald">
+                        <i class="fas fa-user-cog"></i> Edit Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-4">
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-number">{{ active_jobs }}</div>
+                <div class="stats-label">Active Job Posts</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-number">{{ active_trips }}</div>
+                <div class="stats-label">Confirmed Trips</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-number">{{ completed_trips }}</div>
+                <div class="stats-label">Completed Trips</div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stats-card">
+                <div class="stats-number">{{ "%.1f"|format(company.dynamic_rating) }}</div>
+                <div class="stats-label">Your Rating ({{ company.dynamic_rating_count }} reviews)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="row">
+        <!-- Map Column -->
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-map"></i> Available Pilots
+                    </h5>
+                    <div class="d-flex gap-2">
+                        <select id="service-filter" class="form-select form-select-sm" style="width: auto;">
+                            <option value="">All Services</option>
+                            <option value="chase_car">Chase Car</option>
+                            <option value="lead_car">Lead Car</option>
+                            <option value="height_pole">Height Pole</option>
+                            <option value="steer_car">Steer Car</option>
+                            <option value="route_survey">Route Survey</option>
+                            <option value="cevo">CEVO</option>
+                        </select>
+                        <select id="radius-filter" class="form-select form-select-sm" style="width: auto;">
+                            <option value="">All Distances</option>
+                            <option value="50">Within 50 miles</option>
+                            <option value="100">Within 100 miles</option>
+                            <option value="200">Within 200 miles</option>
+                            <option value="300">Within 300 miles</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    <div id="map" class="map-container map-full"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-bolt"></i> Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('post_job') }}" class="btn btn-emerald">
+                            <i class="fas fa-plus-circle"></i> Post New Job
+                        </a>
+                        <a href="{{ url_for('manage_jobs') }}" class="btn btn-outline-emerald">
+                            <i class="fas fa-tasks"></i> Manage Jobs
+                        </a>
+                        <a href="{{ url_for('trucking_trips') }}" class="btn btn-outline-emerald">
+                            <i class="fas fa-route"></i> My Trips
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Activity -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-clock"></i> Recent Activity</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">Your recent job posts and pilot applications will appear here.</p>
+                    <!-- TODO: Add recent activity list -->
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Ratings & Reviews Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-emerald text-white">
+                    <h5 class="mb-0"><i class="fas fa-star"></i> Your Ratings & Reviews</h5>
+                </div>
+                <div class="card-body">
+                    {% set company_ratings = company.ratings|selectattr('company_rating', 'defined')|list %}
+                    {% if company_ratings %}
+                        <div class="mb-3">
+                            <h6>Overall Rating: 
+                                <span class="text-warning">
+                                    {% for i in range(company.dynamic_rating|int) %}★{% endfor %}
+                                    {% for i in range(5 - company.dynamic_rating|int) %}☆{% endfor %}
+                                </span>
+                                {{ "%.1f"|format(company.dynamic_rating) }} ({{ company.dynamic_rating_count }} reviews)
+                            </h6>
+                        </div>
+                        
+                        <div class="reviews">
+                            {% for rating in company_ratings %}
+                            <div class="border-bottom pb-3 mb-3">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <div class="text-warning mb-1">
+                                            {% for i in range(rating.company_rating|int) %}★{% endfor %}
+                                            {% for i in range(5 - rating.company_rating|int) %}☆{% endfor %}
+                                        </div>
+                                        <small class="text-muted">
+                                            Trip #{{ rating.trip_id }} • {{ rating.created_at.strftime('%B %d, %Y') }}
+                                        </small>
+                                    </div>
+                                </div>
+                                {% if rating.company_review %}
+                                <p class="mt-2 mb-0">{{ rating.company_review }}</p>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-muted">No ratings yet. Complete some trips to receive your first rating!</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Initialize map for trucking dashboard
+function initMap() {
+    const defaultCenter = { lat: 39.8283, lng: -98.5795 };
+    
+    map = new google.maps.Map(document.getElementById('map'), {
+        zoom: 4,
+        center: defaultCenter
+    });
+
+    // Load available pilots for trucking companies
+    loadMapData();
+}
+
+// Override the loadMapData function for trucking dashboard
+function loadMapData() {
+    fetch('/api/pilots/locations')
+        .then(response => response.json())
+        .then(pilots => {
+            pilots.forEach(pilot => {
+                addPilotMarker(pilot);
+            });
+        })
+        .catch(error => console.error('Error loading pilots:', error));
+}
+</script>
+{% endblock %} 

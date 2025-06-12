@@ -1,0 +1,384 @@
+{% extends "base.html" %}
+
+{% block title %}Job Details - Pilots Everywhere{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-emerald text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">Job Details #{{ job.id }}</h4>
+                    <span class="badge bg-light text-dark">{{ job.status.title() }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="text-emerald">Route Information</h5>
+                            <div class="mb-3">
+                                <strong>Pickup Location:</strong><br>
+                                {{ job.pickup_address }}
+                            </div>
+                            <div class="mb-3">
+                                <strong>Delivery Location:</strong><br>
+                                {{ job.delivery_address }}
+                            </div>
+                            <div class="mb-3">
+                                <strong>Pickup Date & Time:</strong><br>
+                                {{ job.pickup_datetime.strftime('%B %d, %Y at %I:%M %p') }}
+                            </div>
+                            {% if job.distance_miles %}
+                            <div class="mb-3">
+                                <strong>Distance:</strong><br>
+                                {{ "%.0f"|format(job.distance_miles) }} miles
+                            </div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="text-emerald">Company Information</h5>
+                            <div class="mb-3">
+                                <strong>Trucking Company:</strong><br>
+                                {{ job.trucking_company.company_name }}
+                            </div>
+                            <!-- Contact info only shown after trip confirmation -->
+                            {% if user_type == 'pilot' and job.status == 'confirmed' %}
+                            <div class="mb-3">
+                                <strong>Contact Person:</strong><br>
+                                {{ job.trucking_company.contact_name }}
+                            </div>
+                            <div class="mb-3">
+                                <strong>Phone:</strong><br>
+                                {{ job.trucking_company.phone }}
+                            </div>
+                            <div class="mb-3">
+                                <strong>Email:</strong><br>
+                                {{ job.trucking_company.email }}
+                            </div>
+                            {% else %}
+                            <div class="mb-3">
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle"></i> Contact information will be shared after job confirmation
+                                </small>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="text-emerald">Services Required</h5>
+                            <div class="mb-3">
+                                {% for service in job.get_services_required_display() %}
+                                    <span class="badge bg-emerald me-1">{{ service }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="text-emerald">Rate Information</h5>
+                            <div class="mb-3">
+                                {% if job.rate_per_mile %}
+                                <div><strong>Per Mile:</strong> ${{ "%.2f"|format(job.rate_per_mile) }}</div>
+                                {% endif %}
+                                {% if job.rate_per_day %}
+                                <div><strong>Day Rate:</strong> ${{ "%.2f"|format(job.rate_per_day) }}</div>
+                                {% endif %}
+                                {% if job.overnight_rate %}
+                                <div><strong>Overnight Rate:</strong> ${{ "%.2f"|format(job.overnight_rate) }}</div>
+                                {% endif %}
+                                {% if job.nogo_rate %}
+                                <div><strong>NoGo Fee:</strong> ${{ "%.2f"|format(job.nogo_rate) }}</div>
+                                {% endif %}
+                                <hr class="my-2">
+                                <div>
+                                    <strong>Rate Mixing:</strong> 
+                                    {% if job.allow_rate_mixing %}
+                                        <span class="text-success"><i class="fas fa-check"></i> Mixing mileage with day rate allowed</span>
+                                    {% else %}
+                                        <span class="text-muted"><i class="fas fa-times"></i> No rate mixing</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if job.description %}
+                    <hr>
+                    <div class="mb-3">
+                        <h5 class="text-emerald">Additional Details</h5>
+                        <p>{{ job.description }}</p>
+                    </div>
+                    {% endif %}
+                    
+                    {% if user_type == 'trucking' and is_owner and applications %}
+                    <hr>
+                    <div class="mb-3">
+                        <h5 class="text-emerald">Job Applications ({{ applications|length }})</h5>
+                        {% for application in applications %}
+                        <div class="border rounded p-3 mb-3 {% if application.status == 'approved' %}bg-light-success{% elif application.status == 'rejected' %}bg-light-secondary{% endif %}">
+                            <div class="row">
+                                <div class="col-md-8">
+                                    <h6 class="mb-1">
+                                        {{ application.pilot.full_name }}
+                                        {% if application.status == 'approved' %}
+                                            <span class="badge bg-success ms-2">Approved</span>
+                                        {% elif application.status == 'rejected' %}
+                                            <span class="badge bg-secondary ms-2">Rejected</span>
+                                        {% else %}
+                                            <span class="badge bg-warning ms-2">Pending</span>
+                                        {% endif %}
+                                        
+                                        <!-- Distance from pickup -->
+                                        {% set distance = application.get_pilot_distance_to_pickup() %}
+                                        {% if distance is not none %}
+                                            <span class="badge bg-primary ms-1">
+                                                <i class="fas fa-map-marker-alt"></i> {{ distance }} miles from pickup
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-secondary ms-1">
+                                                <i class="fas fa-map-marker-alt"></i> Location not shared
+                                            </span>
+                                        {% endif %}
+                                    </h6>
+                                    <!-- Contact info hidden until trip confirmation -->
+                                    <p class="text-muted mb-2">
+                                        <small><i class="fas fa-info-circle"></i> Contact information will be shared after trip confirmation</small>
+                                    </p>
+                                    <div class="mb-2">
+                                        <strong>Proposed Rates:</strong><br>
+                                        {% if application.proposed_rate_per_mile %}
+                                        Per Mile: ${{ "%.2f"|format(application.proposed_rate_per_mile) }}<br>
+                                        {% endif %}
+                                        {% if application.proposed_day_rate %}
+                                        Day Rate: ${{ "%.2f"|format(application.proposed_day_rate) }}<br>
+                                        {% endif %}
+                                        {% if application.proposed_overnight_rate %}
+                                        Overnight: ${{ "%.2f"|format(application.proposed_overnight_rate) }}<br>
+                                        {% endif %}
+                                    </div>
+                                    {% if application.message %}
+                                    <div class="mb-2">
+                                        <strong>Message:</strong><br>
+                                        <em>"{{ application.message }}"</em>
+                                    </div>
+                                    {% endif %}
+                                    <small class="text-muted">
+                                        Applied: {{ application.applied_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                        {% if application.responded_at %}
+                                        | Responded: {{ application.responded_at.strftime('%B %d, %Y at %I:%M %p') }}
+                                        {% endif %}
+                                    </small>
+                                </div>
+                                <div class="col-md-4 text-end">
+                                    {% if application.status == 'pending' and job.status == 'posted' %}
+                                    <form method="POST" action="{{ url_for('respond_to_application', application_id=application.id) }}" class="d-inline">
+                                        <button type="submit" name="action" value="approve" class="btn btn-success btn-sm me-1" onclick="return confirm('Approve this application? This will reject all other pending applications.')">
+                                            <i class="fas fa-check"></i> Approve
+                                        </button>
+                                        <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm" onclick="return confirm('Reject this application?')">
+                                            <i class="fas fa-times"></i> Reject
+                                        </button>
+                                    </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% elif user_type == 'trucking' and is_owner %}
+                    <hr>
+                    <div class="mb-3">
+                        <h5 class="text-emerald">Job Applications</h5>
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> No applications received yet.
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if job.pickup_latitude and job.pickup_longitude %}
+                    <hr>
+                    <div class="mb-3">
+                        <h5 class="text-emerald">Route Map</h5>
+                        <div id="job-map" style="height: 300px; border-radius: 0.375rem;"></div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    {% if user_type == 'pilot' and job.status == 'posted' %}
+                        <a href="{{ url_for('pilot_apply_job', job_id=job.id) }}" class="btn btn-emerald">
+                            <i class="fas fa-paper-plane"></i> Apply for This Job
+                        </a>
+                    {% elif user_type == 'trucking' and is_owner %}
+                        <!-- Job Management Actions for Company Owners -->
+                        <div class="d-flex flex-wrap gap-2">
+                            {% if job.status == 'posted' %}
+                                {% if applications|length == 0 %}
+                                <a href="{{ url_for('edit_job', job_id=job.id) }}" class="btn btn-primary">
+                                    <i class="fas fa-edit"></i> Edit Job
+                                </a>
+                                {% endif %}
+                                <form method="POST" action="{{ url_for('cancel_job', job_id=job.id) }}" class="d-inline" onsubmit="return confirm('Are you sure you want to cancel this job?')">
+                                    <button type="submit" class="btn btn-danger">
+                                        <i class="fas fa-times"></i> Cancel Job
+                                    </button>
+                                </form>
+                                <form method="POST" action="{{ url_for('mark_job_covered', job_id=job.id) }}" class="d-inline" onsubmit="return confirm('Mark this job as covered by external pilot?')">
+                                    <button type="submit" class="btn btn-warning">
+                                        <i class="fas fa-check"></i> Mark as Covered
+                                    </button>
+                                </form>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                    <button onclick="window.close()" class="btn btn-outline-secondary">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{% if job.pickup_latitude and job.pickup_longitude %}
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ config.GOOGLE_MAPS_API_KEY }}&libraries=geometry&callback=initJobMap"></script>
+<script>
+function initJobMap() {
+    console.log('Initializing job map...');
+    
+    try {
+        const pickup = { lat: {{ job.pickup_latitude }}, lng: {{ job.pickup_longitude }} };
+        console.log('Pickup coordinates:', pickup);
+        
+        {% if job.delivery_latitude and job.delivery_longitude %}
+        const delivery = { lat: {{ job.delivery_latitude }}, lng: {{ job.delivery_longitude }} };
+        console.log('Delivery coordinates:', delivery);
+        {% else %}
+        const delivery = null;
+        console.log('No delivery coordinates');
+        {% endif %}
+        
+        // Create map centered between pickup and delivery (or just pickup if no delivery coords)
+        let center = pickup;
+        let zoom = 8;
+        
+        if (delivery) {
+            // Calculate center point between pickup and delivery
+            center = {
+                lat: (pickup.lat + delivery.lat) / 2,
+                lng: (pickup.lng + delivery.lng) / 2
+            };
+            
+            // Calculate zoom based on distance (simplified)
+            const latDiff = Math.abs(pickup.lat - delivery.lat);
+            const lngDiff = Math.abs(pickup.lng - delivery.lng);
+            const maxDiff = Math.max(latDiff, lngDiff);
+            
+            if (maxDiff < 1) zoom = 10;
+            else if (maxDiff < 3) zoom = 8;
+            else if (maxDiff < 10) zoom = 6;
+            else zoom = 4;
+        }
+        
+        console.log('Map center:', center, 'Zoom:', zoom);
+        
+        const map = new google.maps.Map(document.getElementById('job-map'), {
+            zoom: zoom,
+            center: center,
+            mapTypeControl: true,
+            streetViewControl: true,
+            fullscreenControl: true
+        });
+        
+        console.log('Map created successfully');
+        
+        // Add pickup marker
+        const pickupMarker = new google.maps.Marker({
+            position: pickup,
+            map: map,
+            title: 'Pickup Location',
+            icon: {
+                url: 'https://maps.google.com/mapfiles/ms/icons/green-dot.png'
+            }
+        });
+        
+        const pickupInfo = new google.maps.InfoWindow({
+            content: '<div><strong>Pickup Location</strong><br>{{ job.pickup_address|safe }}</div>'
+        });
+        
+        pickupMarker.addListener('click', function() {
+            pickupInfo.open(map, pickupMarker);
+        });
+        
+        console.log('Pickup marker added');
+        
+        // Add delivery marker if coordinates exist
+        if (delivery) {
+            const deliveryMarker = new google.maps.Marker({
+                position: delivery,
+                map: map,
+                title: 'Delivery Location',
+                icon: {
+                    url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png'
+                }
+            });
+            
+            const deliveryInfo = new google.maps.InfoWindow({
+                content: '<div><strong>Delivery Location</strong><br>{{ job.delivery_address|safe }}</div>'
+            });
+            
+            deliveryMarker.addListener('click', function() {
+                deliveryInfo.open(map, deliveryMarker);
+            });
+            
+            console.log('Delivery marker added');
+            
+            // Draw route between pickup and delivery
+            const directionsService = new google.maps.DirectionsService();
+            const directionsRenderer = new google.maps.DirectionsRenderer({
+                suppressMarkers: true, // Don't show default markers since we have custom ones
+                polylineOptions: {
+                    strokeColor: '#52c41a',
+                    strokeWeight: 4
+                }
+            });
+            directionsRenderer.setMap(map);
+            
+            directionsService.route({
+                origin: pickup,
+                destination: delivery,
+                travelMode: google.maps.TravelMode.DRIVING
+            }, function(result, status) {
+                console.log('Directions status:', status);
+                if (status === 'OK') {
+                    directionsRenderer.setDirections(result);
+                    console.log('Route drawn successfully');
+                } else {
+                    console.error('Directions request failed:', status);
+                }
+            });
+        }
+        
+    } catch (error) {
+        console.error('Error initializing map:', error);
+        // Show error message in map container
+        const mapContainer = document.getElementById('job-map');
+        if (mapContainer) {
+            mapContainer.innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted"><i class="fas fa-exclamation-triangle me-2"></i>Unable to load map</div>';
+        }
+    }
+}
+
+// Handle Google Maps API errors
+window.addEventListener('error', function(e) {
+    if (e.message && e.message.includes('Google')) {
+        console.error('Google Maps API error:', e.message);
+        const mapContainer = document.getElementById('job-map');
+        if (mapContainer) {
+            mapContainer.innerHTML = '<div class="d-flex align-items-center justify-content-center h-100 text-muted"><i class="fas fa-exclamation-triangle me-2"></i>Map unavailable</div>';
+        }
+    }
+});
+</script>
+{% endif %}
+{% endblock %} 

@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+
+{% block title %}Post Job - Pilots Everywhere{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-emerald text-white">
+                    <h4 class="mb-0">Post New Job</h4>
+                </div>
+                <div class="card-body">
+                    <!-- Display form errors if any -->
+                    {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <strong>Please fix the following errors:</strong>
+                            <ul class="mb-0">
+                                {% for field_name, errors in form.errors.items() %}
+                                    {% for error in errors %}
+                                        <li>{{ form[field_name].label.text }}: {{ error }}</li>
+                                    {% endfor %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                    {% endif %}
+                    
+                    <form method="post" id="job-form">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.pickup_address.label(class="form-label") }}
+                                    {{ form.pickup_address(class="form-control", placeholder="Enter pickup address", id="pickup_address") }}
+                                    {{ form.pickup_latitude(id="pickup_latitude") }}
+                                    {{ form.pickup_longitude(id="pickup_longitude") }}
+                                    {% if form.pickup_address.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.pickup_address.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.delivery_address.label(class="form-label") }}
+                                    {{ form.delivery_address(class="form-control", placeholder="Enter delivery address", id="delivery_address") }}
+                                    {{ form.delivery_latitude(id="delivery_latitude") }}
+                                    {{ form.delivery_longitude(id="delivery_longitude") }}
+                                    {% if form.delivery_address.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.delivery_address.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.pickup_datetime.label(class="form-label") }}
+                            {{ form.pickup_datetime(class="form-control", type="datetime-local", id="pickup_datetime") }}
+                            {% if form.pickup_datetime.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.pickup_datetime.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <small class="form-text text-muted">Select a date and time for pickup</small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.services_required.label(class="form-label") }}
+                            <div class="row">
+                                {% for subfield in form.services_required %}
+                                <div class="col-md-4 mb-2">
+                                    <div class="form-check">
+                                        {{ subfield(class="form-check-input") }}
+                                        {{ subfield.label(class="form-check-label") }}
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% if form.services_required.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.services_required.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.rate_per_mile.label(class="form-label") }}
+                                    {{ form.rate_per_mile(class="form-control", step="0.01") }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.rate_per_day.label(class="form-label") }}
+                                    {{ form.rate_per_day(class="form-control", step="0.01") }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.overnight_rate.label(class="form-label") }}
+                                    {{ form.overnight_rate(class="form-control", step="0.01") }}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.nogo_rate.label(class="form-label") }}
+                                    {{ form.nogo_rate(class="form-control", step="0.01") }}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <div class="form-check">
+                                {{ form.allow_rate_mixing(class="form-check-input") }}
+                                {{ form.allow_rate_mixing.label(class="form-check-label") }}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control", rows="4", placeholder="Additional job details...") }}
+                        </div>
+                        
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-emerald btn-lg") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<!-- Google Maps API -->
+<script async defer src="https://maps.googleapis.com/maps/api/js?key={{ config.GOOGLE_MAPS_API_KEY }}&libraries=places&callback=initAutocomplete"></script>
+
+<script>
+let pickupAutocomplete;
+let deliveryAutocomplete;
+
+// Initialize Google Maps autocomplete
+function initAutocomplete() {
+    console.log('Initializing autocomplete...');
+    
+    const pickupInput = document.getElementById('pickup_address');
+    const deliveryInput = document.getElementById('delivery_address');
+    
+    if (pickupInput && deliveryInput) {
+        // Initialize autocomplete for pickup address
+        pickupAutocomplete = new google.maps.places.Autocomplete(pickupInput, {
+            types: ['address'],
+            componentRestrictions: {'country': ['us', 'ca']} // North America focus
+        });
+        
+        // Initialize autocomplete for delivery address
+        deliveryAutocomplete = new google.maps.places.Autocomplete(deliveryInput, {
+            types: ['address'],
+            componentRestrictions: {'country': ['us', 'ca']} // North America focus
+        });
+        
+        // Handle pickup address selection
+        pickupAutocomplete.addListener('place_changed', function() {
+            const place = pickupAutocomplete.getPlace();
+            console.log('Pickup place selected:', place);
+            
+            if (place.geometry && place.geometry.location) {
+                const lat = place.geometry.location.lat();
+                const lng = place.geometry.location.lng();
+                
+                document.getElementById('pickup_latitude').value = lat;
+                document.getElementById('pickup_longitude').value = lng;
+                
+                console.log('Pickup coordinates set:', lat, lng);
+                showLocationConfirmation('pickup', place.formatted_address || place.name);
+            } else {
+                console.warn('No geometry found for pickup place');
+                clearLocationConfirmation('pickup');
+            }
+        });
+        
+        // Handle delivery address selection
+        deliveryAutocomplete.addListener('place_changed', function() {
+            const place = deliveryAutocomplete.getPlace();
+            console.log('Delivery place selected:', place);
+            
+            if (place.geometry && place.geometry.location) {
+                const lat = place.geometry.location.lat();
+                const lng = place.geometry.location.lng();
+                
+                document.getElementById('delivery_latitude').value = lat;
+                document.getElementById('delivery_longitude').value = lng;
+                
+                console.log('Delivery coordinates set:', lat, lng);
+                showLocationConfirmation('delivery', place.formatted_address || place.name);
+            } else {
+                console.warn('No geometry found for delivery place');
+                clearLocationConfirmation('delivery');
+            }
+        });
+        
+        console.log('Autocomplete initialized successfully');
+    } else {
+        console.error('Address input fields not found');
+    }
+}
+
+// Show location confirmation
+function showLocationConfirmation(type, address) {
+    const inputField = document.getElementById(type + '_address');
+    if (inputField && inputField.parentNode) {
+        // Remove existing confirmation
+        const existingConfirm = inputField.parentNode.querySelector('.location-confirm');
+        if (existingConfirm) {
+            existingConfirm.remove();
+        }
+        
+        // Add new confirmation
+        const confirmDiv = document.createElement('div');
+        confirmDiv.className = 'location-confirm text-success mt-1';
+        confirmDiv.innerHTML = '<i class="fas fa-check-circle"></i> <small>Location found: ' + address + '</small>';
+        inputField.parentNode.appendChild(confirmDiv);
+    }
+}
+
+// Clear location confirmation
+function clearLocationConfirmation(type) {
+    const inputField = document.getElementById(type + '_address');
+    if (inputField && inputField.parentNode) {
+        const confirmDiv = inputField.parentNode.querySelector('.location-confirm');
+        if (confirmDiv) {
+            confirmDiv.remove();
+        }
+    }
+    
+    // Clear coordinates
+    document.getElementById(type + '_latitude').value = '';
+    document.getElementById(type + '_longitude').value = '';
+}
+
+// Form validation
+document.addEventListener('DOMContentLoaded', function() {
+    // Set minimum date/time for pickup to current date/time
+    const pickupDateTime = document.getElementById('pickup_datetime');
+    if (pickupDateTime) {
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const day = now.getDate().toString().padStart(2, '0');
+        const hours = now.getHours().toString().padStart(2, '0');
+        const minutes = now.getMinutes().toString().padStart(2, '0');
+        const minDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+        pickupDateTime.min = minDateTime;
+    }
+    
+    const form = document.getElementById('job-form');
+    
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+            let errorMessages = [];
+            
+            // Check if coordinates are set for pickup
+            const pickupLat = document.getElementById('pickup_latitude').value;
+            const pickupLng = document.getElementById('pickup_longitude').value;
+            
+            if (!pickupLat || !pickupLng) {
+                isValid = false;
+                errorMessages.push('Please select a valid pickup location from the autocomplete suggestions.');
+            }
+            
+            // Check if coordinates are set for delivery
+            const deliveryLat = document.getElementById('delivery_latitude').value;
+            const deliveryLng = document.getElementById('delivery_longitude').value;
+            
+            if (!deliveryLat || !deliveryLng) {
+                isValid = false;
+                errorMessages.push('Please select a valid delivery location from the autocomplete suggestions.');
+            }
+            
+            // Check if at least one service is selected
+            const services = form.querySelectorAll('input[name="services_required"]:checked');
+            if (services.length === 0) {
+                isValid = false;
+                errorMessages.push('Please select at least one service required.');
+            }
+            
+            // Check pickup date/time
+            const pickupDateTime = document.getElementById('pickup_datetime').value;
+            if (!pickupDateTime) {
+                isValid = false;
+                errorMessages.push('Please select a pickup date and time.');
+            }
+            
+            if (!isValid) {
+                e.preventDefault();
+                showFormErrors(errorMessages);
+                return false;
+            }
+            
+            return true;
+        });
+    }
+});
+
+// Show form validation errors
+function showFormErrors(errors) {
+    // Remove existing error alert
+    const existingAlert = document.querySelector('.form-validation-alert');
+    if (existingAlert) {
+        existingAlert.remove();
+    }
+    
+    // Create new error alert
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-danger form-validation-alert';
+    alertDiv.innerHTML = '<strong>Please fix the following issues:</strong><ul class="mb-0">' + 
+                         errors.map(error => '<li>' + error + '</li>').join('') + '</ul>';
+    
+    // Insert at top of form
+    const form = document.getElementById('job-form');
+    if (form) {
+        form.insertBefore(alertDiv, form.firstChild);
+        alertDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+
+// Window error handler for Google Maps API issues
+window.addEventListener('error', function(e) {
+    if (e.message && e.message.includes('Google')) {
+        console.error('Google Maps API error:', e.message);
+    }
+});
+</script>
+{% endblock %} 

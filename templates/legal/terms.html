@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Terms and Conditions - Pilots Everywhere{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card mt-4">
+                <div class="card-header bg-emerald text-white">
+                    <h3 class="mb-0">
+                        <i class="fas fa-file-contract"></i> Terms and Conditions
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <p class="lead">Last updated: {{ moment().format('MMMM DD, YYYY') }}</p>
+                    
+                    <h4 class="text-emerald mt-4">1. Agreement to Terms</h4>
+                    <p>By accessing and using Pilots Everywhere ("the Platform"), you accept and agree to be bound by the terms and provision of this agreement.</p>
+                    
+                    <h4 class="text-emerald mt-4">2. Service Description</h4>
+                    <p>Pilots Everywhere is a marketplace platform that connects trucking companies with certified pilot car escorts/operators for oversize load transportation across North America. <strong>We are solely a marketplace that facilitates connections between parties and are not responsible for the actual services provided.</strong></p>
+                    
+                    <h4 class="text-emerald mt-4">3. Marketplace Nature</h4>
+                    <p><strong>IMPORTANT:</strong> Pilots Everywhere operates exclusively as a marketplace platform. We:</p>
+                    <ul>
+                        <li>Do NOT handle payments between trucking companies and pilots</li>
+                        <li>Do NOT guarantee the quality, experience, or reliability of any pilot car operator</li>
+                        <li>Do NOT guarantee payment from trucking companies to pilots</li>
+                        <li>Are NOT responsible for disputes between parties</li>
+                        <li>Are NOT liable for any damages, delays, or issues arising from services provided through our platform</li>
+                    </ul>
+                    
+                    <h4 class="text-emerald mt-4">4. User Responsibilities</h4>
+                    
+                    <h5 class="text-emerald mt-3">For Trucking Companies:</h5>
+                    <ul>
+                        <li>Verify pilot qualifications and certifications independently</li>
+                        <li>Ensure proper licensing and insurance requirements are met</li>
+                        <li>Make payments directly to pilot car operators as agreed</li>
+                        <li>Provide accurate job information and requirements</li>
+                    </ul>
+                    
+                    <h5 class="text-emerald mt-3">For Pilot Car Operators:</h5>
+                    <ul>
+                        <li>Maintain valid certifications and licensing</li>
+                        <li>Provide accurate information about qualifications and equipment</li>
+                        <li>Deliver services professionally and safely</li>
+                        <li>Communicate clearly about availability and rates</li>
+                    </ul>
+                    
+                    <h4 class="text-emerald mt-4">5. Quality Assurance Through Rating System</h4>
+                    <p>To improve service quality and reduce issues with unreliable parties, we implement:</p>
+                    <ul>
+                        <li><strong>Mandatory rating system:</strong> All completed trips must be rated by both parties</li>
+                        <li><strong>Review system:</strong> Written reviews help identify quality service providers</li>
+                        <li><strong>Customer service follow-up:</strong> We may contact users to gather additional feedback</li>
+                        <li><strong>Account monitoring:</strong> Consistently poor ratings may result in account restrictions</li>
+                    </ul>
+                    
+                    <h4 class="text-emerald mt-4">6. Payment Terms</h4>
+                    <p><strong>Platform fees (currently waived during beta):</strong></p>
+                    <ul>
+                        <li>Pilot Car Operators: $15/month subscription (free during beta)</li>
+                        <li>Trucking Companies: $20 per dispatch (free during beta)</li>
+                    </ul>
+                    <p><strong>Direct payments between users:</strong> All service payments are made directly between trucking companies and pilots. Pilots Everywhere does not process, hold, or guarantee these payments.</p>
+                    
+                    <h4 class="text-emerald mt-4">7. Limitation of Liability</h4>
+                    <p><strong>Pilots Everywhere, its officers, directors, employees, and agents shall not be liable for:</strong></p>
+                    <ul>
+                        <li>Any damages arising from non-payment between parties</li>
+                        <li>Poor quality or unprofessional service delivery</li>
+                        <li>Accidents, injuries, or property damage during escort services</li>
+                        <li>Delays, cancellations, or no-shows</li>
+                        <li>Misrepresentation of qualifications or capabilities</li>
+                        <li>Any indirect, incidental, special, or consequential damages</li>
+                    </ul>
+                    
+                    <h4 class="text-emerald mt-4">8. Customer Service Commitment</h4>
+                    <p>We strive to improve our service through:</p>
+                    <ul>
+                        <li>Verbal feedback collection via phone calls</li>
+                        <li>Continuous platform improvements based on user feedback</li>
+                        <li>Mediation assistance for disputes (at our discretion)</li>
+                        <li>Educational resources for best practices</li>
+                    </ul>
+                    
+                    <h4 class="text-emerald mt-4">9. Account Termination</h4>
+                    <p>We reserve the right to terminate accounts that:</p>
+                    <ul>
+                        <li>Consistently receive poor ratings</li>
+                        <li>Violate these terms of service</li>
+                        <li>Engage in fraudulent or deceptive practices</li>
+                        <li>Fail to maintain required certifications or licensing</li>
+                    </ul>
+                    
+                    <h4 class="text-emerald mt-4">10. Governing Law</h4>
+                    <p>These terms shall be governed by and construed in accordance with the laws of the jurisdiction where Pilots Everywhere is incorporated, without regard to its conflict of law provisions.</p>
+                    
+                    <h4 class="text-emerald mt-4">11. Changes to Terms</h4>
+                    <p>We reserve the right to modify these terms at any time. Users will be notified of significant changes and continued use of the platform constitutes acceptance of modified terms.</p>
+                    
+                    <h4 class="text-emerald mt-4">12. Contact Information</h4>
+                    <p>For questions about these terms, please contact us at:</p>
+                    <ul>
+                        <li>Email: legal@pilotseverywhere.com</li>
+                        <li>Phone: 1-800-PILOTS-1</li>
+                    </ul>
+                    
+                    <div class="alert alert-warning mt-4">
+                        <h5><i class="fas fa-exclamation-triangle"></i> Important Reminder</h5>
+                        <p class="mb-0">Pilots Everywhere is a marketplace platform only. We connect trucking companies with pilot car operators but are not responsible for the quality of services provided, payment disputes, or any issues that may arise during service delivery. Users assume full responsibility for verifying qualifications, making payments, and ensuring professional service delivery.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

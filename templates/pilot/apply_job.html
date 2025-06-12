@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+
+{% block title %}Apply for Job - Pilots Everywhere{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <!-- Job Summary -->
+            <div class="card mb-4">
+                <div class="card-header bg-emerald text-white">
+                    <h4 class="mb-0">Job #{{ job.id }} - {{ job.trucking_company.company_name }}</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-2"><strong>From:</strong> {{ job.pickup_address }}</div>
+                            <div class="mb-2"><strong>To:</strong> {{ job.delivery_address }}</div>
+                            <div class="mb-2"><strong>Pickup:</strong> {{ job.pickup_datetime.strftime('%B %d, %Y at %I:%M %p') }}</div>
+                            {% if job.distance_miles %}
+                            <div class="mb-2"><strong>Distance:</strong> {{ "%.0f"|format(job.distance_miles) }} miles</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-2">
+                                <strong>Services Required:</strong><br>
+                                {% for service in job.get_services_required_display() %}
+                                    <span class="badge bg-light text-dark me-1">{{ service }}</span>
+                                {% endfor %}
+                            </div>
+                            <div class="mb-2">
+                                <strong>Company Rates:</strong><br>
+                                {% if job.rate_per_mile %}${{ "%.2f"|format(job.rate_per_mile) }}/mile{% endif %}
+                                {% if job.rate_per_day %}{{ ', ' if job.rate_per_mile }}${{ "%.2f"|format(job.rate_per_day) }}/day{% endif %}
+                                {% if job.overnight_rate %}{{ ', ' if job.rate_per_mile or job.rate_per_day }}${{ "%.2f"|format(job.overnight_rate) }}/night{% endif %}
+                                {% if job.nogo_rate %}{{ ', ' if job.rate_per_mile or job.rate_per_day or job.overnight_rate }}${{ "%.2f"|format(job.nogo_rate) }} NoGo{% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Application Form -->
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0">Submit Your Application</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> <strong>Rate Proposal:</strong> 
+                            You can propose your own rates or accept the company's rates. Leave fields empty to accept their rates.
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.proposed_rate_per_mile.label(class="form-label") }}
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        {{ form.proposed_rate_per_mile(class="form-control", step="0.01", placeholder="Accept company rate" if job.rate_per_mile else "Enter your rate") }}
+                                        <span class="input-group-text">/mile</span>
+                                    </div>
+                                    {% if job.rate_per_mile %}
+                                        <small class="form-text text-muted">Company rate: ${{ "%.2f"|format(job.rate_per_mile) }}/mile</small>
+                                    {% endif %}
+                                    {% if form.proposed_rate_per_mile.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.proposed_rate_per_mile.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.proposed_rate_per_day.label(class="form-label") }}
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        {{ form.proposed_rate_per_day(class="form-control", step="0.01", placeholder="Accept company rate" if job.rate_per_day else "Enter your rate") }}
+                                        <span class="input-group-text">/day</span>
+                                    </div>
+                                    {% if job.rate_per_day %}
+                                        <small class="form-text text-muted">Company rate: ${{ "%.2f"|format(job.rate_per_day) }}/day</small>
+                                    {% endif %}
+                                    {% if form.proposed_rate_per_day.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.proposed_rate_per_day.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.proposed_overnight_rate.label(class="form-label") }}
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        {{ form.proposed_overnight_rate(class="form-control", step="0.01", placeholder="Accept company rate" if job.overnight_rate else "Enter your rate") }}
+                                        <span class="input-group-text">/night</span>
+                                    </div>
+                                    {% if job.overnight_rate %}
+                                        <small class="form-text text-muted">Company rate: ${{ "%.2f"|format(job.overnight_rate) }}/night</small>
+                                    {% endif %}
+                                    {% if form.proposed_overnight_rate.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.proposed_overnight_rate.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.proposed_nogo_rate.label(class="form-label") }}
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        {{ form.proposed_nogo_rate(class="form-control", step="0.01", placeholder="Accept company rate" if job.nogo_rate else "Enter your rate") }}
+                                        <span class="input-group-text">NoGo fee</span>
+                                    </div>
+                                    {% if job.nogo_rate %}
+                                        <small class="form-text text-muted">Company rate: ${{ "%.2f"|format(job.nogo_rate) }} NoGo fee</small>
+                                    {% endif %}
+                                    {% if form.proposed_nogo_rate.errors %}
+                                        <div class="text-danger">
+                                            {% for error in form.proposed_nogo_rate.errors %}
+                                                <small>{{ error }}</small>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.message.label(class="form-label") }}
+                            {{ form.message(class="form-control", rows="4", placeholder="Introduce yourself, highlight your experience, mention any certifications, etc.") }}
+                            {% if form.message.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.message.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> <strong>Important:</strong> 
+                            Once you submit this application, the trucking company will be able to see your contact information and rate proposals. 
+                            You can only apply to each job once.
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            {{ form.submit(class="btn btn-emerald btn-lg") }}
+                            <a href="{{ url_for('pilot_dashboard') }}" class="btn btn-outline-secondary btn-lg">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

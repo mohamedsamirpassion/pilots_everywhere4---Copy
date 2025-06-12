@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Pilot Profile - Pilots Everywhere{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card mt-4">
+                <div class="card-header bg-emerald text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-user-cog"></i> Pilot Car Operator Profile
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.company_name.label(class="form-label") }}
+                                    {{ form.company_name(class="form-control" + (" is-invalid" if form.company_name.errors else "")) }}
+                                    {% if form.company_name.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.company_name.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.contact_name.label(class="form-label") }}
+                                    {{ form.contact_name(class="form-control" + (" is-invalid" if form.contact_name.errors else "")) }}
+                                    {% if form.contact_name.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.contact_name.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.phone.label(class="form-label") }}
+                                    {{ form.phone(class="form-control" + (" is-invalid" if form.phone.errors else "")) }}
+                                    {% if form.phone.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.phone.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    {{ form.email.label(class="form-label") }}
+                                    {{ form.email(class="form-control" + (" is-invalid" if form.email.errors else "")) }}
+                                    {% if form.email.errors %}
+                                        <div class="invalid-feedback">
+                                            {% for error in form.email.errors %}
+                                                <div>{{ error }}</div>
+                                            {% endfor %}
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.services.label(class="form-label") }}
+                            <div class="row">
+                                {% for subfield in form.services %}
+                                    <div class="col-md-6 col-lg-4">
+                                        <div class="form-check">
+                                            {{ subfield(class="form-check-input") }}
+                                            {{ subfield.label(class="form-check-label") }}
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            {% if form.services.errors %}
+                                <div class="text-danger mt-1">
+                                    {% for error in form.services.errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                            <div class="form-text">
+                                Select all services you can provide. These will be displayed to trucking companies.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.equipment_details.label(class="form-label") }}
+                            {{ form.equipment_details(class="form-control", rows="4") }}
+                            <div class="form-text">
+                                Describe your equipment, vehicle specifications, and any special capabilities.
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.certifications.label(class="form-label") }}
+                            {{ form.certifications(class="form-control", rows="3") }}
+                            <div class="form-text">
+                                List your certifications, licenses, and training credentials.
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid">
+                            {{ form.submit(class="btn btn-emerald btn-lg") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

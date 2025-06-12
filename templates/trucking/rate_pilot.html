@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+
+{% block title %}Rate Pilot - Pilots Everywhere{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header bg-emerald text-white">
+                    <h4 class="mb-0"><i class="fas fa-star"></i> Rate Pilot</h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5>Trip #{{ trip.id }}</h5>
+                        <p class="text-muted">
+                            <strong>Pilot:</strong> {{ trip.pilot.company_name }}<br>
+                            <strong>Route:</strong> {{ trip.job.pickup_address }} → {{ trip.job.delivery_address }}<br>
+                            <strong>Date:</strong> {{ trip.job.pickup_datetime.strftime('%B %d, %Y') }}
+                        </p>
+                    </div>
+                    
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+                        
+                        <div class="mb-4">
+                            <label class="form-label">Rating</label>
+                            <div class="star-rating">
+                                <input type="radio" name="rating" value="5" id="star5" required>
+                                <label for="star5" class="star">⭐</label>
+                                
+                                <input type="radio" name="rating" value="4" id="star4">
+                                <label for="star4" class="star">⭐</label>
+                                
+                                <input type="radio" name="rating" value="3" id="star3">
+                                <label for="star3" class="star">⭐</label>
+                                
+                                <input type="radio" name="rating" value="2" id="star2">
+                                <label for="star2" class="star">⭐</label>
+                                
+                                <input type="radio" name="rating" value="1" id="star1">
+                                <label for="star1" class="star">⭐</label>
+                            </div>
+                            <small class="text-muted">Click on stars to rate (1-5 stars)</small>
+                        </div>
+                        
+                        <div class="mb-4">
+                            {{ form.review.label(class="form-label") }}
+                            {{ form.review(class="form-control", rows="4", placeholder="Share your experience working with this pilot...") }}
+                            <small class="text-muted">Please write at least 10 characters</small>
+                            {% if form.review.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.review.errors %}
+                                        <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('trucking_trips') }}" class="btn btn-outline-secondary">Cancel</a>
+                            {{ form.submit(class="btn btn-warning") }}
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.star-rating {
+    display: flex;
+    justify-content: flex-start;
+    gap: 5px;
+    margin-bottom: 10px;
+}
+
+.star-rating input[type="radio"] {
+    display: none;
+}
+
+.star-rating label.star {
+    font-size: 2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0.3;
+}
+
+.star-rating input[type="radio"]:checked ~ label.star,
+.star-rating label.star:hover ~ label.star {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.star-rating input[type="radio"]:checked + label.star,
+.star-rating label.star:hover {
+    opacity: 1;
+    transform: scale(1.1);
+}
+
+.star-rating:hover label.star {
+    opacity: 0.6;
+}
+</style>
+{% endblock %} 

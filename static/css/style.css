@@ -1,0 +1,369 @@
+/* Main Colors - Emerald Theme */
+:root {
+    --emerald-50: #ecfdf5;
+    --emerald-100: #d1fae5;
+    --emerald-200: #a7f3d0;
+    --emerald-300: #6ee7b7;
+    --emerald-400: #34d399;
+    --emerald-500: #10b981;
+    --emerald-600: #059669;
+    --emerald-700: #047857;
+    --emerald-800: #065f46;
+    --emerald-900: #064e3b;
+    --gray-50: #f9fafb;
+    --gray-100: #f3f4f6;
+    --gray-200: #e5e7eb;
+    --gray-300: #d1d5db;
+    --gray-400: #9ca3af;
+    --gray-500: #6b7280;
+    --gray-600: #4b5563;
+    --gray-700: #374151;
+    --gray-800: #1f2937;
+    --gray-900: #111827;
+}
+
+/* Base Styles */
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    line-height: 1.6;
+    color: var(--gray-700);
+    background-color: var(--gray-50);
+}
+
+/* Navigation */
+.bg-emerald {
+    background-color: var(--emerald-600) !important;
+}
+
+.navbar-brand {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.navbar-nav .nav-link {
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.navbar-nav .nav-link:hover {
+    color: var(--emerald-200) !important;
+}
+
+/* Main Content */
+.main-content {
+    margin-top: 76px; /* Account for fixed navbar */
+    min-height: calc(100vh - 200px);
+}
+
+/* Buttons */
+.btn-emerald {
+    background-color: var(--emerald-600);
+    border-color: var(--emerald-600);
+    color: white;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-emerald:hover {
+    background-color: var(--emerald-700);
+    border-color: var(--emerald-700);
+    color: white;
+    transform: translateY(-1px);
+}
+
+.btn-outline-emerald {
+    color: var(--emerald-600);
+    border-color: var(--emerald-600);
+    font-weight: 500;
+}
+
+.btn-outline-emerald:hover {
+    background-color: var(--emerald-600);
+    border-color: var(--emerald-600);
+    color: white;
+}
+
+/* Cards */
+.card {
+    border: none;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease;
+}
+
+.card:hover {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    transform: translateY(-2px);
+}
+
+.card-header {
+    background-color: var(--emerald-50);
+    border-bottom: 1px solid var(--emerald-200);
+    font-weight: 600;
+    color: var(--emerald-800);
+}
+
+/* Forms */
+.form-control {
+    border: 1px solid var(--gray-300);
+    border-radius: 8px;
+    padding: 0.75rem;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus {
+    border-color: var(--emerald-500);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--gray-700);
+    margin-bottom: 0.5rem;
+}
+
+/* Map Styles */
+.map-container {
+    height: 500px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.map-full {
+    height: 70vh;
+}
+
+/* Pilot/Job Markers */
+.marker-pilot {
+    background-color: var(--emerald-600);
+    color: white;
+    border: 2px solid white;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.marker-job {
+    background-color: var(--emerald-800);
+    color: white;
+    border: 2px solid white;
+    border-radius: 4px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Rating Stars */
+.rating-stars {
+    color: #fbbf24;
+    display: inline-flex;
+    gap: 2px;
+}
+
+.rating-stars .star {
+    font-size: 1.1rem;
+}
+
+.rating-display {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Service Badges */
+.service-badge {
+    background-color: var(--emerald-100);
+    color: var(--emerald-800);
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: inline-block;
+    margin: 0.125rem;
+}
+
+/* Status Badges */
+.status-posted {
+    background-color: var(--emerald-100);
+    color: var(--emerald-800);
+}
+
+.status-covered {
+    background-color: var(--gray-100);
+    color: var(--gray-800);
+}
+
+.status-cancelled {
+    background-color: #fee2e2;
+    color: #991b1b;
+}
+
+.status-confirmed {
+    background-color: #dbeafe;
+    color: #1e40af;
+}
+
+.status-in-progress {
+    background-color: #fef3c7;
+    color: #92400e;
+}
+
+.status-completed {
+    background-color: var(--emerald-100);
+    color: var(--emerald-800);
+}
+
+/* Dashboard Stats */
+.stats-card {
+    background: linear-gradient(135deg, var(--emerald-500), var(--emerald-600));
+    color: white;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.stats-card .stats-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.stats-card .stats-label {
+    font-size: 0.875rem;
+    opacity: 0.9;
+    font-weight: 500;
+}
+
+/* Location Sharing */
+.location-status {
+    padding: 1rem;
+    border-radius: 8px;
+    margin-bottom: 1rem;
+}
+
+.location-active {
+    background-color: var(--emerald-50);
+    border: 1px solid var(--emerald-200);
+    color: var(--emerald-800);
+}
+
+.location-expired {
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #991b1b;
+}
+
+/* Job Cards */
+.job-card {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+
+.job-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.job-distance {
+    color: var(--emerald-600);
+    font-weight: 600;
+}
+
+.job-rate {
+    color: var(--gray-600);
+    font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-content {
+        margin-top: 70px;
+    }
+    
+    .map-container {
+        height: 400px;
+    }
+    
+    .map-full {
+        height: 50vh;
+    }
+    
+    .stats-card .stats-number {
+        font-size: 2rem;
+    }
+}
+
+/* Animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Loading Spinner */
+.spinner-emerald {
+    color: var(--emerald-600);
+}
+
+/* Profile Pictures */
+.profile-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--emerald-400), var(--emerald-600));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+/* Footer */
+footer {
+    margin-top: auto;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--gray-100);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--emerald-400);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--emerald-500);
+}
+
+/* Utility Classes */
+.text-emerald {
+    color: var(--emerald-600) !important;
+}
+
+.bg-emerald-light {
+    background-color: var(--emerald-50) !important;
+}
+
+.border-emerald {
+    border-color: var(--emerald-200) !important;
+} 

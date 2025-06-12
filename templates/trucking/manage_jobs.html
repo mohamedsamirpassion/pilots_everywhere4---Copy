@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Jobs - Pilots Everywhere{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-emerald">Manage Jobs</h2>
+        <a href="{{ url_for('post_job') }}" class="btn btn-emerald">Post New Job</a>
+    </div>
+    
+    {% if jobs %}
+    <div class="row">
+        {% for job in jobs %}
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Job #{{ job.id }}</h5>
+                    <span class="badge bg-{% if job.status == 'posted' %}success{% elif job.status == 'in_progress' %}warning{% elif job.status == 'completed' %}primary{% else %}secondary{% endif %}">
+                        {{ job.status.title() }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <strong>Pickup:</strong> {{ job.pickup_address }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Delivery:</strong> {{ job.delivery_address }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Pickup Date:</strong> {{ job.pickup_datetime.strftime('%B %d, %Y at %I:%M %p') }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Services:</strong>
+                        {% for service in job.get_services_required_display() %}
+                            <span class="badge bg-light text-dark me-1">{{ service }}</span>
+                        {% endfor %}
+                    </div>
+                    {% if job.distance_miles %}
+                    <div class="mb-2">
+                        <strong>Distance:</strong> {{ job.distance_miles }} miles
+                    </div>
+                    {% endif %}
+                    <div class="mb-2">
+                        <strong>Rates:</strong>
+                        {% if job.rate_per_mile %}${{ "%.2f"|format(job.rate_per_mile) }}/mile{% endif %}
+                        {% if job.rate_per_day %}{{ ', ' if job.rate_per_mile }}${{ "%.2f"|format(job.rate_per_day) }}/day{% endif %}
+                        {% if job.overnight_rate %}{{ ', ' if job.rate_per_mile or job.rate_per_day }}${{ "%.2f"|format(job.overnight_rate) }}/night{% endif %}
+                        {% if job.nogo_rate %}{{ ', ' if job.rate_per_mile or job.rate_per_day or job.overnight_rate }}${{ "%.2f"|format(job.nogo_rate) }} NoGo{% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <strong>Applications:</strong> 
+                        <span class="badge bg-{% if job.applications|length > 0 %}warning{% else %}secondary{% endif %}">
+                            {{ job.applications|length }}
+                        </span>
+                        {% if job.applications|length > 0 %}
+                            <span class="text-muted">
+                                ({{ job.applications|selectattr('status', 'equalto', 'pending')|list|length }} pending)
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Applications Preview -->
+                    {% if job.applications %}
+                    <div class="applications-preview mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <small class="text-muted"><strong>Recent Applications:</strong></small>
+                            <button class="btn btn-sm btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#applications-{{ job.id }}" aria-expanded="false">
+                                <i class="fas fa-chevron-down"></i>
+                            </button>
+                        </div>
+                        <div class="collapse" id="applications-{{ job.id }}">
+                            {% for application in job.applications[:3] %}
+                            <div class="border rounded p-2 mb-2 {% if application.status == 'approved' %}bg-light-success{% elif application.status == 'rejected' %}bg-light-secondary{% endif %}">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div class="flex-grow-1">
+                                        <strong class="small">{{ application.pilot.full_name }}</strong>
+                                        {% if application.status == 'approved' %}
+                                            <span class="badge bg-success badge-sm">Approved</span>
+                                        {% elif application.status == 'rejected' %}
+                                            <span class="badge bg-secondary badge-sm">Rejected</span>
+                                        {% else %}
+                                            <span class="badge bg-warning badge-sm">Pending</span>
+                                        {% endif %}
+                                        <br>
+                                        <small class="text-muted">
+                                            Rates: {% if application.proposed_rate_per_mile %}${{ "%.2f"|format(application.proposed_rate_per_mile) }}/mi{% endif %}{% if application.proposed_day_rate %}{{ ' | ' if application.proposed_rate_per_mile }}${{ "%.2f"|format(application.proposed_day_rate) }}/day{% endif %}
+                                        </small>
+                                        <br>
+                                        <!-- Distance from pickup -->
+                                        {% set distance = application.get_pilot_distance_to_pickup() %}
+                                        {% if distance is not none %}
+                                            <small class="text-primary">
+                                                <i class="fas fa-map-marker-alt"></i> {{ distance }} miles from pickup
+                                            </small>
+                                        {% else %}
+                                            <small class="text-muted">
+                                                <i class="fas fa-map-marker-alt"></i> Location not shared
+                                            </small>
+                                        {% endif %}
+                                    </div>
+                                    {% if application.status == 'pending' and job.status == 'posted' %}
+                                    <div class="btn-group btn-group-sm">
+                                        <form method="POST" action="{{ url_for('respond_to_application', application_id=application.id) }}" class="d-inline">
+                                            <button type="submit" name="action" value="approve" class="btn btn-success btn-sm" onclick="return confirm('Approve this application?')" title="Approve">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm" onclick="return confirm('Reject this application?')" title="Reject">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% if job.applications|length > 3 %}
+                            <small class="text-muted">
+                                and {{ job.applications|length - 3 }} more... 
+                                <a href="{{ url_for('job_details', job_id=job.id) }}" class="text-decoration-none">View all</a>
+                            </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex flex-wrap gap-1">
+                        {% if job.status == 'posted' %}
+                            {% if job.applications|length == 0 %}
+                            <a href="{{ url_for('edit_job', job_id=job.id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+                            {% endif %}
+                            <form method="POST" action="{{ url_for('cancel_job', job_id=job.id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Cancel this job?')">
+                                    <i class="fas fa-times"></i> Cancel
+                                </button>
+                            </form>
+                            <form method="POST" action="{{ url_for('mark_job_covered', job_id=job.id) }}" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-warning" onclick="return confirm('Mark as covered?')">
+                                    <i class="fas fa-check"></i> Mark Covered
+                                </button>
+                            </form>
+                        {% endif %}
+                        <a href="{{ url_for('job_details', job_id=job.id) }}" class="btn btn-sm btn-outline-primary">
+                            <i class="fas fa-eye"></i> View Details
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <div class="mb-4">
+            <i class="fas fa-clipboard-list fa-4x text-muted"></i>
+        </div>
+        <h4 class="text-muted">No Jobs Posted Yet</h4>
+        <p class="text-muted">Get started by posting your first job to find qualified pilot car operators.</p>
+        <a href="{{ url_for('post_job') }}" class="btn btn-emerald">Post Your First Job</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

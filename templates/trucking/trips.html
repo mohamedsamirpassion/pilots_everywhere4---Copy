@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block title %}Trips - Pilots Everywhere{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2 class="text-emerald">Trip History</h2>
+    </div>
+    
+    {% if trips %}
+    <div class="row">
+        {% for trip in trips %}
+        <div class="col-lg-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Trip #{{ trip.id }}</h5>
+                    <span class="badge bg-{% if trip.status == 'confirmed' %}warning{% elif trip.status == 'in_progress' %}info{% elif trip.status == 'completed' %}success{% else %}secondary{% endif %}">
+                        {{ trip.status.replace('_', ' ').title() }}
+                    </span>
+                </div>
+                <div class="card-body">
+                    {% if trip.status in ['in_progress', 'completed'] %}
+                    <div class="mb-2">
+                        <strong>Pilot:</strong> {{ trip.pilot.company_name }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Contact:</strong> {{ trip.pilot.contact_name }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Phone:</strong> {{ trip.pilot.phone }}
+                    </div>
+                    {% else %}
+                    <div class="mb-2">
+                        <small class="text-muted"><i class="fas fa-info-circle"></i> Pilot information will be shared after pilot confirms the trip</small>
+                    </div>
+                    {% endif %}
+                    <div class="mb-2">
+                        <strong>Pickup:</strong> {{ trip.job.pickup_address }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Delivery:</strong> {{ trip.job.delivery_address }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Pickup Date:</strong> {{ trip.job.pickup_datetime.strftime('%B %d, %Y at %I:%M %p') }}
+                    </div>
+                    {% if trip.job.distance_miles %}
+                    <div class="mb-2">
+                        <strong>Distance:</strong> {{ trip.job.distance_miles }} miles
+                    </div>
+                    {% endif %}
+                    <div class="mb-2">
+                        <strong>Rate:</strong>
+                        {% if trip.agreed_rate_per_mile %}${{ "%.2f"|format(trip.agreed_rate_per_mile) }}/mile{% endif %}
+                        {% if trip.agreed_rate_per_day %}{{ ', ' if trip.agreed_rate_per_mile }}${{ "%.2f"|format(trip.agreed_rate_per_day) }}/day{% endif %}
+                        {% if trip.agreed_overnight_rate %}{{ ', ' if trip.agreed_rate_per_mile or trip.agreed_rate_per_day }}${{ "%.2f"|format(trip.agreed_overnight_rate) }}/night{% endif %}
+                        {% if trip.agreed_nogo_rate %}{{ ', ' if trip.agreed_rate_per_mile or trip.agreed_rate_per_day or trip.agreed_overnight_rate }}${{ "%.2f"|format(trip.agreed_nogo_rate) }} NoGo{% endif %}
+                    </div>
+                    {% if trip.status == 'completed' and trip.ratings and trip.ratings|selectattr('rated_by', 'equalto', 'pilot')|list %}
+                    <div class="mb-2">
+                        <strong>Your Rating:</strong>
+                        <div class="text-warning">
+                            {% set pilot_rating = trip.ratings|selectattr('rated_by', 'equalto', 'pilot')|first %}
+                            {% for i in range(pilot_rating.company_rating|int) %}★{% endfor %}
+                            {% for i in range(5 - pilot_rating.company_rating|int) %}☆{% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    {% if trip.status == 'confirmed' %}
+                    <small class="text-muted">Waiting for pilot confirmation...</small>
+                    {% elif trip.status == 'in_progress' %}
+                    <button class="btn btn-sm btn-success">Mark as Completed</button>
+                    {% elif trip.status == 'completed' and not (trip.ratings and trip.ratings|selectattr('rated_by', 'equalto', 'trucking')|list) %}
+                    <a href="{{ url_for('rate_pilot', trip_id=trip.id) }}" class="btn btn-sm btn-warning">Rate Pilot</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5">
+        <div class="mb-4">
+            <i class="fas fa-route fa-4x text-muted"></i>
+        </div>
+        <h4 class="text-muted">No Trips Yet</h4>
+        <p class="text-muted">Your confirmed trips will appear here.</p>
+        <a href="{{ url_for('trucking_dashboard') }}" class="btn btn-emerald">Back to Dashboard</a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 

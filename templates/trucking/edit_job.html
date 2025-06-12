@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Job - Pilots Everywhere{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow">
+                <div class="card-header bg-emerald text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-edit"></i> Edit Job #{{ job.id }}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Note:</strong> You can only edit jobs that haven't received applications yet.
+                    </div>
+                    
+                    <form method="POST" novalidate>
+                        {{ form.hidden_tag() }}
+                        
+                        <!-- Form-wide errors -->
+                        {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                {% for field, errors in form.errors.items() %}
+                                    {% if field != 'csrf_token' %}
+                                        {% for error in errors %}
+                                        <li>{{ form[field].label.text }}: {{ error }}</li>
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                        
+                        <!-- Route Information -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.pickup_address.label(class="form-label required") }}
+                                {{ form.pickup_address(class="form-control" + (" is-invalid" if form.pickup_address.errors else ""), placeholder="Enter pickup address") }}
+                                <div class="form-text">Start typing to see address suggestions</div>
+                                {% if form.pickup_address.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.pickup_address.errors %}{{ error }}{% endfor %}
+                                </div>
+                                {% endif %}
+                                {{ form.pickup_latitude(style="display: none;") }}
+                                {{ form.pickup_longitude(style="display: none;") }}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.delivery_address.label(class="form-label required") }}
+                                {{ form.delivery_address(class="form-control" + (" is-invalid" if form.delivery_address.errors else ""), placeholder="Enter delivery address") }}
+                                <div class="form-text">Start typing to see address suggestions</div>
+                                {% if form.delivery_address.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.delivery_address.errors %}{{ error }}{% endfor %}
+                                </div>
+                                {% endif %}
+                                {{ form.delivery_latitude(style="display: none;") }}
+                                {{ form.delivery_longitude(style="display: none;") }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                {{ form.pickup_datetime.label(class="form-label required") }}
+                                {{ form.pickup_datetime(class="form-control" + (" is-invalid" if form.pickup_datetime.errors else "")) }}
+                                {% if form.pickup_datetime.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.pickup_datetime.errors %}{{ error }}{% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                {{ form.services_required.label(class="form-label required") }}
+                                {% for service in form.services_required %}
+                                <div class="form-check">
+                                    {{ service(class="form-check-input") }}
+                                    {{ service.label(class="form-check-label") }}
+                                </div>
+                                {% endfor %}
+                                {% if form.services_required.errors %}
+                                <div class="text-danger">
+                                    {% for error in form.services_required.errors %}{{ error }}{% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <!-- Rate Information -->
+                        <h5 class="text-emerald mt-4 mb-3">Rate Information</h5>
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                {{ form.rate_per_mile.label(class="form-label") }}
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    {{ form.rate_per_mile(class="form-control" + (" is-invalid" if form.rate_per_mile.errors else ""), placeholder="0.00") }}
+                                </div>
+                                {% if form.rate_per_mile.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.rate_per_mile.errors %}{{ error }}{% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form.rate_per_day.label(class="form-label") }}
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    {{ form.rate_per_day(class="form-control" + (" is-invalid" if form.rate_per_day.errors else ""), placeholder="0.00") }}
+                                </div>
+                                {% if form.rate_per_day.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.rate_per_day.errors %}{{ error }}{% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form.overnight_rate.label(class="form-label") }}
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    {{ form.overnight_rate(class="form-control" + (" is-invalid" if form.overnight_rate.errors else ""), placeholder="0.00") }}
+                                </div>
+                                {% if form.overnight_rate.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.overnight_rate.errors %}{{ error }}{% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                {{ form.nogo_rate.label(class="form-label") }}
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    {{ form.nogo_rate(class="form-control" + (" is-invalid" if form.nogo_rate.errors else ""), placeholder="0.00") }}
+                                </div>
+                                {% if form.nogo_rate.errors %}
+                                <div class="invalid-feedback">
+                                    {% for error in form.nogo_rate.errors %}{{ error }}{% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-check">
+                                    {{ form.allow_rate_mixing(class="form-check-input") }}
+                                    {{ form.allow_rate_mixing.label(class="form-check-label") }}
+                                </div>
+                                <div class="form-text">Allow pilots to propose a combination of mileage and day rates</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Additional Details -->
+                        <h5 class="text-emerald mt-4 mb-3">Additional Details</h5>
+                        <div class="mb-3">
+                            {{ form.description.label(class="form-label") }}
+                            {{ form.description(class="form-control" + (" is-invalid" if form.description.errors else ""), rows="4", placeholder="Any additional details about the load or requirements...") }}
+                            {% if form.description.errors %}
+                            <div class="invalid-feedback">
+                                {% for error in form.description.errors %}{{ error }}{% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="{{ url_for('job_details', job_id=job.id) }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-save"></i> Update Job
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://maps.googleapis.com/maps/api/js?key={{ config.GOOGLE_MAPS_API_KEY }}&libraries=places"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Google Places Autocomplete
+    const pickupInput = document.getElementById('pickup_address');
+    const deliveryInput = document.getElementById('delivery_address');
+    
+    if (window.google && window.google.maps) {
+        // Configure autocomplete for North America
+        const options = {
+            types: ['geocode'],
+            componentRestrictions: { country: ['us', 'ca', 'mx'] }
+        };
+        
+        // Pickup autocomplete
+        const pickupAutocomplete = new google.maps.places.Autocomplete(pickupInput, options);
+        pickupAutocomplete.addListener('place_changed', function() {
+            const place = pickupAutocomplete.getPlace();
+            if (place.geometry) {
+                document.getElementById('pickup_latitude').value = place.geometry.location.lat();
+                document.getElementById('pickup_longitude').value = place.geometry.location.lng();
+                pickupInput.classList.add('is-valid');
+                pickupInput.classList.remove('is-invalid');
+            }
+        });
+        
+        // Delivery autocomplete
+        const deliveryAutocomplete = new google.maps.places.Autocomplete(deliveryInput, options);
+        deliveryAutocomplete.addListener('place_changed', function() {
+            const place = deliveryAutocomplete.getPlace();
+            if (place.geometry) {
+                document.getElementById('delivery_latitude').value = place.geometry.location.lat();
+                document.getElementById('delivery_longitude').value = place.geometry.location.lng();
+                deliveryInput.classList.add('is-valid');
+                deliveryInput.classList.remove('is-invalid');
+            }
+        });
+    }
+    
+    // Set minimum datetime to current time
+    const pickupDatetime = document.getElementById('pickup_datetime');
+    if (pickupDatetime) {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        pickupDatetime.min = now.toISOString().slice(0, 16);
+    }
+});
+</script>
+{% endblock %} 
