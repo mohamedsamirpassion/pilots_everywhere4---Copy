@@ -1,0 +1,17 @@
+version: 1
+reviews:
+  # Enable automatic reviews for pull requests
+  auto_review:
+    enabled: true
+  # Specify paths to include in reviews
+  paths:
+    - '**/*.py'  # Review all Python files
+    # Add more paths or file patterns as needed
+  # Optionally, exclude certain paths
+  exclude_paths:
+    - 'venv/**'  # Exclude virtual environment files
+    - 'instance/**'  # Exclude instance directory
+    # Add more paths to exclude if necessary
+  # Set the depth of review (light, medium, deep)
+  depth: medium
+# Additional settings can be added based on CodeRabbit documentation 
