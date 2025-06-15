@@ -31,6 +31,10 @@
                             <div class="mb-3">
                                 <strong>Distance:</strong><br>
                                 {{ "%.0f"|format(job.distance_miles) }} miles
+                                <br><small class="text-muted">
+                                    <i class="fas fa-info-circle"></i> Estimated distance with 20% buffer for oversize load routing. 
+                                    Actual routes may vary due to bridge heights, weight restrictions, and permit requirements.
+                                </small>
                             </div>
                             {% endif %}
                         </div>
@@ -38,7 +42,11 @@
                             <h5 class="text-emerald">Company Information</h5>
                             <div class="mb-3">
                                 <strong>Trucking Company:</strong><br>
-                                {{ job.trucking_company.company_name }}
+                                {% if user_type == 'pilot' %}
+                                    <span class="text-muted">Company details available after job confirmation</span>
+                                {% else %}
+                                    {{ job.trucking_company.company_name }}
+                                {% endif %}
                             </div>
                             <!-- Contact info only shown after trip confirmation -->
                             {% if user_type == 'pilot' and job.status == 'confirmed' %}

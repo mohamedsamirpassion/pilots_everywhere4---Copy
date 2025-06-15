@@ -9,7 +9,7 @@
             <!-- Job Summary -->
             <div class="card mb-4">
                 <div class="card-header bg-emerald text-white">
-                    <h4 class="mb-0">Job #{{ job.id }} - {{ job.trucking_company.company_name }}</h4>
+                    <h4 class="mb-0">Job #{{ job.id }}</h4>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -18,7 +18,12 @@
                             <div class="mb-2"><strong>To:</strong> {{ job.delivery_address }}</div>
                             <div class="mb-2"><strong>Pickup:</strong> {{ job.pickup_datetime.strftime('%B %d, %Y at %I:%M %p') }}</div>
                             {% if job.distance_miles %}
-                            <div class="mb-2"><strong>Distance:</strong> {{ "%.0f"|format(job.distance_miles) }} miles</div>
+                            <div class="mb-2">
+                                <strong>Distance:</strong> {{ "%.0f"|format(job.distance_miles) }} miles
+                                <br><small class="text-muted">
+                                    <i class="fas fa-info-circle"></i> Estimated with 20% buffer for oversize routing
+                                </small>
+                            </div>
                             {% endif %}
                         </div>
                         <div class="col-md-6">

@@ -112,12 +112,16 @@ function addPilotMarker(pilot) {
         map: map,
         title: pilot.company_name,
         icon: {
-            path: google.maps.SymbolPath.CIRCLE,
-            fillColor: '#059669',
-            fillOpacity: 1,
-            strokeColor: '#ffffff',
-            strokeWeight: 2,
-            scale: 15
+            url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                <svg width="18" height="24" viewBox="0 0 18 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 0C4.05 0 0 4.05 0 9c0 9 9 15 9 15s9-6 9-15C18 4.05 13.95 0 9 0z" fill="#10b981"/>
+                    <path d="M9 0C4.05 0 0 4.05 0 9c0 9 9 15 9 15s9-6 9-15C18 4.05 13.95 0 9 0z" fill="none" stroke="#ffffff" stroke-width="1"/>
+                    <circle cx="9" cy="9" r="5" fill="#ffffff"/>
+                    <text x="9" y="13" text-anchor="middle" fill="#10b981" font-family="Arial, sans-serif" font-size="9" font-weight="bold">P</text>
+                </svg>
+            `),
+            scaledSize: new google.maps.Size(18, 24),
+            anchor: new google.maps.Point(9, 24)
         }
     });
     
@@ -148,12 +152,16 @@ function addJobMarker(job) {
         map: map,
         title: `Job: ${job.pickup_address}`,
         icon: {
-            path: google.maps.SymbolPath.BACKWARD_CLOSED_ARROW,
-            fillColor: '#065f46',
-            fillOpacity: 1,
-            strokeColor: '#ffffff',
-            strokeWeight: 2,
-            scale: 8
+            url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                <svg width="18" height="24" viewBox="0 0 18 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9 0C4.05 0 0 4.05 0 9c0 9 9 15 9 15s9-6 9-15C18 4.05 13.95 0 9 0z" fill="#0891b2"/>
+                    <path d="M9 0C4.05 0 0 4.05 0 9c0 9 9 15 9 15s9-6 9-15C18 4.05 13.95 0 9 0z" fill="none" stroke="#ffffff" stroke-width="1"/>
+                    <circle cx="9" cy="9" r="5" fill="#ffffff"/>
+                    <text x="9" y="13" text-anchor="middle" fill="#0891b2" font-family="Arial, sans-serif" font-size="9" font-weight="bold">J</text>
+                </svg>
+            `),
+            scaledSize: new google.maps.Size(18, 24),
+            anchor: new google.maps.Point(9, 24)
         }
     });
     
@@ -180,20 +188,30 @@ function addJobMarker(job) {
 function createPilotInfoContent(pilot) {
     const services = pilot.services ? pilot.services.join(', ') : 'N/A';
     const rating = pilot.rating ? createStarRating(pilot.rating) : 'No ratings yet';
+    const ratingText = pilot.rating_count > 0 ? `${rating} (${pilot.rating_count} reviews)` : 'No ratings yet';
     
     return `
-        <div class="p-3" style="max-width: 300px;">
-            <h6 class="fw-bold text-emerald">${pilot.company_name}</h6>
-            <p class="mb-1"><strong>Contact:</strong> ${pilot.contact_name}</p>
-            <p class="mb-1"><strong>Services:</strong> ${services}</p>
-            <p class="mb-2"><strong>Rating:</strong> ${rating}</p>
-            <div class="d-flex gap-2">
-                <button class="btn btn-sm btn-emerald" onclick="viewPilotProfile(${pilot.id})">
-                    View Profile
+        <div class="p-3" style="max-width: 320px;">
+            <h6 class="fw-bold text-emerald mb-2">${pilot.company_name}</h6>
+            <div class="mb-2">
+                <small class="text-muted">Services Available:</small><br>
+                <span class="fw-medium">${services}</span>
+            </div>
+            <div class="mb-2">
+                <small class="text-muted">Coverage Radius:</small><br>
+                <span class="fw-medium">${pilot.coverage_radius} miles</span>
+            </div>
+            <div class="mb-3">
+                <small class="text-muted">Rating:</small><br>
+                <span class="fw-medium">${ratingText}</span>
+            </div>
+            <div class="d-grid gap-2">
+                <button class="btn btn-sm btn-emerald" onclick="offerJob(${pilot.id})">
+                    <i class="fas fa-handshake"></i> Make Job Offer
                 </button>
-                <button class="btn btn-sm btn-outline-emerald" onclick="offerJob(${pilot.id})">
-                    Offer Job
-                </button>
+                <small class="text-muted text-center">
+                    Contact details available after job agreement
+                </small>
             </div>
         </div>
     `;
@@ -218,7 +236,10 @@ function createJobInfoContent(job) {
             <p class="mb-1"><strong>Pickup:</strong> ${new Date(job.pickup_datetime).toLocaleDateString()}</p>
             <p class="mb-1"><strong>Services:</strong> ${services}</p>
             <p class="mb-1"><strong>Rate:</strong> ${rateText}</p>
-            <p class="mb-2"><strong>Distance:</strong> ${job.distance_miles} miles</p>
+            <p class="mb-2">
+                <strong>Distance:</strong> ${job.distance_miles} miles
+                <br><small class="text-muted"><i class="fas fa-info-circle"></i> Est. with 20% buffer</small>
+            </p>
             <div class="d-flex gap-2">
                 <button class="btn btn-sm btn-emerald" onclick="viewJobDetails(${job.id})">
                     View Details

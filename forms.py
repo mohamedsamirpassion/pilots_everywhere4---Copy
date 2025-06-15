@@ -4,6 +4,17 @@ from wtforms.validators import DataRequired, Email, EqualTo, Length, NumberRange
 from wtforms.widgets import CheckboxInput, ListWidget
 from models import User, SERVICE_TYPES
 
+def AtLeastOneRequired(message=None):
+    """Custom validator that requires at least one item to be selected from a MultiCheckboxField"""
+    if not message:
+        message = 'At least one option must be selected.'
+    
+    def _at_least_one_required(form, field):
+        if not field.data or len(field.data) == 0:
+            raise ValidationError(message)
+    
+    return _at_least_one_required
+
 class MultiCheckboxField(SelectMultipleField):
     widget = ListWidget(prefix_label=False)
     option_widget = CheckboxInput()
@@ -35,7 +46,7 @@ class PilotProfileForm(FlaskForm):
     email = StringField('Email', validators=[DataRequired(), Email(), Length(max=120)])
     services = MultiCheckboxField('Services Offered', 
                                  choices=SERVICE_TYPES, 
-                                 validators=[DataRequired()])
+                                 validators=[AtLeastOneRequired('Please select at least one service you can provide.')])
     equipment_details = TextAreaField('Equipment Details')
     certifications = TextAreaField('Certifications')
     submit = SubmitField('Save Profile')
@@ -57,7 +68,7 @@ class LocationShareForm(FlaskForm):
     address = StringField('Address', validators=[Optional()])
     services_available = MultiCheckboxField('Services Available at This Location', 
                                            choices=SERVICE_TYPES, 
-                                           validators=[DataRequired()])
+                                           validators=[AtLeastOneRequired('Please select at least one service available at this location.')])
     coverage_radius = IntegerField('Coverage Radius (miles)', 
                                   validators=[DataRequired(), NumberRange(min=100, max=700)],
                                   default=300)
@@ -75,7 +86,7 @@ class JobPostForm(FlaskForm):
                                    validators=[DataRequired()])
     services_required = MultiCheckboxField('Services Required', 
                                           choices=SERVICE_TYPES, 
-                                          validators=[DataRequired()])
+                                          validators=[AtLeastOneRequired('Please select at least one service required for this job.')])
     rate_per_mile = DecimalField('Rate per Mile ($)', validators=[Optional(), NumberRange(min=0)])
     rate_per_day = DecimalField('Day Rate ($)', validators=[Optional(), NumberRange(min=0)])
     overnight_rate = DecimalField('Overnight Rate ($)', validators=[Optional(), NumberRange(min=0)])

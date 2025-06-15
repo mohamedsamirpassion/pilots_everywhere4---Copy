@@ -38,7 +38,7 @@ def inject_config():
 
 # Utility functions
 def calculate_distance(lat1, lng1, lat2, lng2):
-    """Calculate distance between two points in miles using Haversine formula"""
+    """Calculate distance between two points in miles using Haversine formula with 20% buffer for oversize loads"""
     R = 3959  # Earth's radius in miles
     
     lat1_rad = math.radians(lat1)
@@ -51,7 +51,11 @@ def calculate_distance(lat1, lng1, lat2, lng2):
          math.sin(delta_lng/2) ** 2)
     c = 2 * math.atan2(math.sqrt(a), math.sqrt(1-a))
     
-    return R * c
+    straight_line_distance = R * c
+    
+    # Add 20% buffer to account for oversize load routing restrictions
+    # Oversize loads cannot take direct routes due to bridge heights, weight limits, etc.
+    return straight_line_distance * 1.2
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -650,6 +654,65 @@ def pilot_stop_sharing_location():
     
     return redirect(url_for('pilot_dashboard'))
 
+@app.route('/pilot/quick-share-location', methods=['POST'])
+@login_required
+def pilot_quick_share_location():
+    if current_user.user_type != 'pilot':
+        return jsonify({'error': 'Access denied'}), 403
+    
+    if not current_user.pilot_profile:
+        return jsonify({'error': 'Please complete your profile first'}), 400
+    
+    pilot = current_user.pilot_profile
+    
+    # Get location data from request
+    data = request.get_json()
+    if not data or 'latitude' not in data or 'longitude' not in data:
+        return jsonify({'error': 'Location data required'}), 400
+    
+    try:
+        latitude = float(data['latitude'])
+        longitude = float(data['longitude'])
+    except (ValueError, TypeError):
+        return jsonify({'error': 'Invalid location coordinates'}), 400
+    
+    # Validate coordinates
+    if not (-90 <= latitude <= 90) or not (-180 <= longitude <= 180):
+        return jsonify({'error': 'Invalid location coordinates'}), 400
+    
+    # Get pilot's services from their profile
+    if not pilot.services:
+        return jsonify({'error': 'No services configured in your profile. Please update your profile first.'}), 400
+    
+    # Remove any existing location
+    existing_location = PilotLocation.query.filter_by(pilot_id=pilot.id).filter(
+        PilotLocation.expires_at > datetime.utcnow()
+    ).first()
+    
+    if existing_location:
+        db.session.delete(existing_location)
+    
+    # Create new location with pilot's profile services
+    new_location = PilotLocation(
+        pilot_id=pilot.id,
+        latitude=latitude,
+        longitude=longitude,
+        address=data.get('address', ''),
+        services_available=pilot.services,  # Use services from pilot's profile
+        coverage_radius=300,  # Default 300 miles
+        expires_at=datetime.utcnow() + timedelta(hours=48)
+    )
+    
+    db.session.add(new_location)
+    db.session.commit()
+    
+    return jsonify({
+        'success': True,
+        'message': 'Location shared successfully! You are now visible to trucking companies for 48 hours.',
+        'services': new_location.get_services_available_display(),
+        'expires_at': new_location.expires_at.isoformat()
+    })
+
 @app.route('/job/<int:job_id>')
 def job_details(job_id):
     job = Job.query.get_or_404(job_id)
@@ -945,6 +1008,38 @@ def pilot_apply_job(job_id):
     
     return render_template('pilot/apply_job.html', job=job, form=form)
 
+@app.route('/pilot/application/<int:application_id>/withdraw', methods=['POST'])
+@login_required
+def pilot_withdraw_application(application_id):
+    if current_user.user_type != 'pilot':
+        flash('Access denied.', 'error')
+        return redirect(url_for('dashboard'))
+    
+    if not current_user.pilot_profile:
+        flash('Please complete your profile first.', 'warning')
+        return redirect(url_for('profile'))
+    
+    application = JobApplication.query.get_or_404(application_id)
+    pilot = current_user.pilot_profile
+    
+    # Check if pilot owns this application
+    if application.pilot_id != pilot.id:
+        flash('Access denied.', 'error')
+        return redirect(url_for('pilot_jobs'))
+    
+    # Only allow withdrawal of pending applications
+    if application.status != 'pending':
+        flash('Cannot withdraw application that is not pending.', 'error')
+        return redirect(url_for('pilot_jobs'))
+    
+    # Update application status
+    application.status = 'withdrawn'
+    application.responded_at = datetime.utcnow()
+    
+    db.session.commit()
+    flash('Application withdrawn successfully.', 'success')
+    return redirect(url_for('pilot_jobs'))
+
 # API Routes for Map Data
 
 @app.route('/api/pilots/locations')
@@ -966,10 +1061,12 @@ def api_pilots_locations():
             'latitude': location.latitude,
             'longitude': location.longitude,
             'company_name': pilot.company_name,
-            'contact_name': pilot.contact_name,
+            # Contact info hidden until job agreement
             'services': location.get_services_available_display(),
-            'rating': pilot.rating,
-            'rating_count': pilot.rating_count
+            'coverage_radius': location.coverage_radius,
+            'rating': pilot.dynamic_rating,
+            'rating_count': pilot.dynamic_rating_count,
+            'expires_at': location.expires_at.isoformat()
         })
     
     return jsonify(pilots_data)
@@ -997,7 +1094,7 @@ def api_jobs_active():
             'rate_per_day': float(job.rate_per_day) if job.rate_per_day else None,
             'overnight_rate': float(job.overnight_rate) if job.overnight_rate else None,
             'distance_miles': job.distance_miles,
-            'company_name': job.trucking_company.company_name
+            # Company name hidden until job confirmation for privacy
         })
     
     return jsonify(jobs_data)

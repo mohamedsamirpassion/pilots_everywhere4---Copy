@@ -109,6 +109,9 @@
                         <a href="{{ url_for('pilot_jobs') }}" class="btn btn-emerald">
                             <i class="fas fa-briefcase"></i> Browse All Jobs
                         </a>
+                        <button id="quickShareBtn" class="btn btn-success" onclick="quickShareLocation()">
+                            <i class="fas fa-bolt"></i> Quick Location Share
+                        </button>
                         {% if current_location %}
                         <a href="{{ url_for('pilot_share_location') }}" class="btn btn-outline-emerald">
                             <i class="fas fa-edit"></i> Update Location
@@ -217,6 +220,115 @@ function loadMapData() {
             });
         })
         .catch(error => console.error('Error loading jobs:', error));
+}
+
+// Quick Location Share functionality
+function quickShareLocation() {
+    const btn = document.getElementById('quickShareBtn');
+    const originalText = btn.innerHTML;
+    
+    // Disable button and show loading
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Getting Location...';
+    
+    if (!navigator.geolocation) {
+        showAlert('Geolocation is not supported by this browser.', 'error');
+        resetButton();
+        return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+        function(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+            
+            // Update button text
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sharing Location...';
+            
+            // Send location to server
+            fetch('/pilot/quick-share-location', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('meta[name=csrf-token]')?.getAttribute('content') || ''
+                },
+                body: JSON.stringify({
+                    latitude: latitude,
+                    longitude: longitude,
+                    address: `${latitude.toFixed(6)}, ${longitude.toFixed(6)}`
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showAlert(data.message, 'success');
+                    // Reload page to update location status
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    showAlert(data.error || 'Failed to share location', 'error');
+                    resetButton();
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('Failed to share location. Please try again.', 'error');
+                resetButton();
+            });
+        },
+        function(error) {
+            let errorMessage = 'Unable to get your location. ';
+            switch(error.code) {
+                case error.PERMISSION_DENIED:
+                    errorMessage += 'Please allow location access and try again.';
+                    break;
+                case error.POSITION_UNAVAILABLE:
+                    errorMessage += 'Location information is unavailable.';
+                    break;
+                case error.TIMEOUT:
+                    errorMessage += 'Location request timed out.';
+                    break;
+                default:
+                    errorMessage += 'An unknown error occurred.';
+                    break;
+            }
+            showAlert(errorMessage, 'error');
+            resetButton();
+        },
+        {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 60000
+        }
+    );
+    
+    function resetButton() {
+        btn.disabled = false;
+        btn.innerHTML = originalText;
+    }
+}
+
+// Helper function to show alerts
+function showAlert(message, type) {
+    // Create alert element
+    const alertDiv = document.createElement('div');
+    alertDiv.className = `alert alert-${type === 'error' ? 'danger' : type} alert-dismissible fade show`;
+    alertDiv.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    
+    // Insert at top of container
+    const container = document.querySelector('.container-fluid');
+    container.insertBefore(alertDiv, container.firstChild);
+    
+    // Auto-dismiss after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
 }
 </script>
 {% endblock %} 

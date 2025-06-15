@@ -163,7 +163,7 @@ class JobApplication(db.Model):
     proposed_overnight_rate = db.Column(db.Float)
     proposed_nogo_rate = db.Column(db.Float)
     message = db.Column(db.Text)
-    status = db.Column(db.String(20), default='pending')  # 'pending', 'accepted', 'rejected'
+    status = db.Column(db.String(20), default='pending')  # 'pending', 'accepted', 'rejected', 'withdrawn'
     applied_at = db.Column(db.DateTime, default=datetime.utcnow)
     responded_at = db.Column(db.DateTime)
     
