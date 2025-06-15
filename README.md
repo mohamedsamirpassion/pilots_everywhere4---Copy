@@ -1,3 +1,5 @@
+[![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/mohamedsamirpassion/pilots_everywhere4---Copy?utm_source=oss&utm_medium=github&utm_campaign=mohamedsamirpassion%2Fpilots_everywhere4---Copy&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)](https://coderabbit.ai)
+
 # Pilots Everywhere
 
 A comprehensive web application that connects trucking companies with certified pilot car escorts for oversize load transportation across North America.
